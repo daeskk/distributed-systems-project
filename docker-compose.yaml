@@ -1,0 +1,41 @@
+services:
+  server1:
+    build:
+      context: .
+      dockerfile: Dockerfile-server
+    environment:
+      - PORT=5001
+    ports:
+      - "5001:5001"
+  server2:
+    build:
+      context: .
+      dockerfile: Dockerfile-server
+    environment:
+      - PORT=5002
+    ports:
+      - "5002:5002"
+  server3:
+    build:
+      context: .
+      dockerfile: Dockerfile-server
+    environment:
+      - PORT=5003
+    ports:
+      - "5003:5003"
+  server4:
+    build:
+      context: .
+      dockerfile: Dockerfile-server
+    environment:
+      - PORT=5004
+    ports:
+      - "5004:5004"
+  middleware:
+    build:
+      context: .
+      dockerfile: Dockerfile-middleware
+    environment:
+      - PORT=5000
+    ports:
+      - "5000:5000"

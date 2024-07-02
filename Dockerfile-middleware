@@ -1,0 +1,9 @@
+FROM python:3.12-alpine
+
+WORKDIR /app
+
+COPY middleware.py config.py ./
+
+EXPOSE 8000
+
+ENTRYPOINT ["python", "-u", "middleware.py"]
