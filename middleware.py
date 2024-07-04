@@ -1,6 +1,7 @@
 import socket
+# import tqdm
 
-from config import AVAILABLE_SERVER_NODES, BUFFER_MAX_SIZE, MIDDLEWARE_PORT, MIDDLEWARE_HOST
+from config import AVAILABLE_SERVER_NODES, END_BYTE_STRING, MIDDLEWARE_PORT, MIDDLEWARE_HOST, ONE_KILOBYTE
 
 def send_file(file, host, port, replica_host, replica_port):
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -20,29 +21,37 @@ def handle_client(client_socket: socket.socket):
     replica_port = replica_server[1]
 
     try:
-        client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client.connect((main_host, main_port))
-        with client:
-            while True:
-                data_chunk = client_socket.recv(1024)
-                if not data_chunk:
-                    break
-            # send file?
+        header = client_socket.recv(1024).decode()
+        file_name, file_size = header.split(':')
+        file_size = int(file_size)
+        file_data = b""
+
+        print(f"[*] received the file {file_name} with a size of {file_size}")
+
+        while True:
+            data_chunk = client_socket.recv(ONE_KILOBYTE)
+            if file_data[-5:] == END_BYTE_STRING:
+                break
+            file_data += data_chunk
+
+        file_data = file_data[:-5]
+
+        
 
     except Exception as e:
-        print('Error while handling the client request.', e)
+        print('[*] Error while handling the client request.', e)
 
 def main():
     manager = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     manager.bind((MIDDLEWARE_HOST, MIDDLEWARE_PORT))
     manager.listen(3)
 
-    print(f"Middleware is listening on port {MIDDLEWARE_PORT}...")
+    print(f"[*] Middleware is listening on port {MIDDLEWARE_PORT}...")
 
     while True:
         client_socket, addr = manager.accept()
 
-        print("connection stablished with port", addr)
+        print("[*] Connection stablished with ", addr)
 
         handle_client(client_socket)
         client_socket.close()

@@ -1,7 +1,7 @@
 import socket
 import os
 
-from config import MIDDLEWARE_HOST, MIDDLEWARE_PORT
+from config import END_BYTE_STRING, MIDDLEWARE_HOST, MIDDLEWARE_PORT
 
 def start_client():
     while True:
@@ -11,14 +11,22 @@ def start_client():
             middleware_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             middleware_client.connect((MIDDLEWARE_HOST, MIDDLEWARE_PORT))
 
-            # sending the file in chunks
             with open(file_path, 'rb') as f:
-                file_bytes = f.read()
-                middleware_client.sendall(file_bytes)
+                file_name = os.path.basename(file_path)
+                file_size = os.path.getsize(file_path)
+                header = f"{file_name}:{file_size}"
+
+                middleware_client.sendall(header.encode())
+
+                data = f.read()
+                middleware_client.sendall(data)
+                middleware_client.send(END_BYTE_STRING)
+
+            print('[*] File has been sent to the server.')
 
             middleware_client.close()
         else:
-            print("File not found. Please try again.")
+            print("[*] File not found. Please try again.")
 
 if __name__ == "__main__":
     start_client()
