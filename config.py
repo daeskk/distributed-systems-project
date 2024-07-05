@@ -1,8 +1,8 @@
 AVAILABLE_SERVER_NODES = [
-    ('localhost', 5001), 
-    ('localhost', 5002), 
-    ('localhost', 5003), 
-    ('localhost', 5004)
+    ('server1', 5001),
+    ('server2', 5002),
+    ('server3', 5003),
+    ('server4', 5004)
 ]
 
 MIDDLEWARE_HOST = 'localhost'

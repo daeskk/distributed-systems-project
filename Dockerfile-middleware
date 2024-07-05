@@ -4,6 +4,8 @@ WORKDIR /app
 
 COPY middleware.py config.py ./
 
-EXPOSE 8000
+ENV PYTHONUNBUFFERED=1
 
-ENTRYPOINT ["python", "-u", "middleware.py"]
+EXPOSE 5000
+
+CMD ["python", "middleware.py"]

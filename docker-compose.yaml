@@ -1,41 +1,65 @@
 services:
   server1:
+    container_name: server1
     build:
       context: .
       dockerfile: Dockerfile-server
     environment:
       - PORT=5001
+      - PYTHONUNBUFFERED=1
+    networks:
+      - my-cloud
     ports:
       - "5001:5001"
   server2:
+    container_name: server2
     build:
       context: .
       dockerfile: Dockerfile-server
     environment:
       - PORT=5002
+      - PYTHONUNBUFFERED=1
+    networks:
+      - my-cloud
     ports:
       - "5002:5002"
   server3:
+    container_name: server3
     build:
       context: .
       dockerfile: Dockerfile-server
     environment:
       - PORT=5003
+      - PYTHONUNBUFFERED=1
+    networks:
+      - my-cloud
     ports:
       - "5003:5003"
   server4:
+    container_name: server4
     build:
       context: .
       dockerfile: Dockerfile-server
     environment:
       - PORT=5004
+      - PYTHONUNBUFFERED=1
+    networks:
+      - my-cloud
     ports:
       - "5004:5004"
   middleware:
+    container_name: middleware
     build:
       context: .
       dockerfile: Dockerfile-middleware
     environment:
       - PORT=5000
+      - PYTHONUNBUFFERED=1
+    networks:
+      - my-cloud
     ports:
       - "5000:5000"
+
+networks:
+  my-cloud:
+    driver: bridge
