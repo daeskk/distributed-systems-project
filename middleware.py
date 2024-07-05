@@ -43,7 +43,7 @@ def load_balance():
     
     primary_server = healthy_servers[current_server % len(healthy_servers)]
     replica_server = healthy_servers[(current_server + 1) % len(healthy_servers)]
-    current_server = (current_server + 2) % len(healthy_servers)
+    current_server = (current_server + 1) % len(healthy_servers)
     
     return primary_server, replica_server
 
@@ -51,9 +51,11 @@ def handle_client(client_socket: socket.socket):
     main_server, replica_server = load_balance()
 
     if not main_server or not replica_server:
-        client_socket.sendall('[!] No available servers!'.encode())
+        client_socket.sendall('No available servers!'.encode())
         return
-
+    
+    client_socket.sendall('Available server found!'.encode())
+    
     main_host = main_server[0]
     main_port = main_server[1]
     replica_host = replica_server[0]

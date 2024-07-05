@@ -25,9 +25,15 @@ def start_client():
 
                 print('[+] File has been sent to the server.')
 
+                response = middleware_client.recv(ONE_KILOBYTE)
+                print(f'[*] Received response: {response.decode()}')
+
                 middleware_client.close()
             else:
                 print("[-] File not found. Please try again.")
+
+        except ConnectionRefusedError:
+            print('[!] No available server.')
 
         except Exception as e:
             print('[!] An unexpected error occurred:', e)
