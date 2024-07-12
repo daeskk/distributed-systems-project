@@ -5,6 +5,9 @@ AVAILABLE_SERVER_NODES = [
     ('server4', 5004)
 ]
 
+INDEXER_HOST = 'indexer'
+INDEXER_PORT = 5090
+
 MIDDLEWARE_HOST = 'localhost'
 MIDDLEWARE_PORT = 5000
 

@@ -2,7 +2,7 @@ import socket
 import time
 import threading
 
-from config import AVAILABLE_SERVER_NODES, END_BYTE_STRING, MIDDLEWARE_PORT, ONE_KILOBYTE
+from config import AVAILABLE_SERVER_NODES, END_BYTE_STRING, MIDDLEWARE_PORT, ONE_KILOBYTE, INDEXER_PORT, INDEXER_HOST
 
 server_status = {address: False for address in AVAILABLE_SERVER_NODES}
 current_server = 0
@@ -84,6 +84,14 @@ def handle_client(client_socket: socket.socket):
                   file_name, file_size, 
                   main_host, main_port, 
                   replica_host, replica_port)
+        
+        indexer_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        indexer_client.connect((INDEXER_HOST, INDEXER_PORT))
+
+        header = f"{file_name}_{main_host}_{replica_host}"
+
+        indexer_client.sendall(header.encode())
+        indexer_client.close()
 
     except Exception as e:
         print('[-] Error while handling the client request.', e)

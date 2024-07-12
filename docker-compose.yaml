@@ -11,6 +11,9 @@ services:
       - my-cloud
     ports:
       - "5001:5001"
+    volumes:
+      - server1_data:/data
+
   server2:
     container_name: server2
     build:
@@ -23,6 +26,9 @@ services:
       - my-cloud
     ports:
       - "5002:5002"
+    volumes:
+      - server2_data:/data
+
   server3:
     container_name: server3
     build:
@@ -35,6 +41,9 @@ services:
       - my-cloud
     ports:
       - "5003:5003"
+    volumes:
+      - server3_data:/data
+
   server4:
     container_name: server4
     build:
@@ -47,6 +56,9 @@ services:
       - my-cloud
     ports:
       - "5004:5004"
+    volumes:
+      - server4_data:/data
+
   middleware:
     container_name: middleware
     build:
@@ -60,6 +72,28 @@ services:
     ports:
       - "5000:5000"
 
+  indexer:
+    container_name: indexer
+    build:
+      context: .
+      dockerfile: Dockerfile-indexer
+    environment:
+      - PORT=5090
+      - PYTHONUNBUFFERED=1
+    networks:
+      - my-cloud
+    ports:
+      - "5090:5090"
+    volumes:
+      - indexer_data:/data
+
 networks:
   my-cloud:
     driver: bridge
+
+volumes:
+  server1_data:
+  server2_data:
+  server3_data:
+  server4_data:
+  indexer_data:
