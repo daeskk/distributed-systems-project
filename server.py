@@ -1,5 +1,6 @@
 import socket
 import os
+import threading
 
 from config import ONE_KILOBYTE, END_BYTE_STRING
 
@@ -49,7 +50,8 @@ def start_server(port):
         
         print("[*] Connection stablished with ", addr)
 
-        handle_client(client_socket)
+        thread = threading.Thread(target=handle_client, args=client_socket)
+        thread.start()
 
 if __name__ == "__main__":
     start_server(int(os.getenv('PORT')))
