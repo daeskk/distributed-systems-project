@@ -13,7 +13,7 @@ def handle_client(client_socket: socket.socket):
     file_data = b""
 
     print(f"[*] received the file {file_name} with a size of {file_size}")
-    print(f"[*] Selected replica - HOST: {replica_host} PORT: {replica_port}")
+    print(f"[*] Selected replica - HOST: {replica_host or ''} PORT: {replica_port or ''}")
 
     while True:
         data_chunk = client_socket.recv(ONE_KILOBYTE)
@@ -27,6 +27,15 @@ def handle_client(client_socket: socket.socket):
         f.write(file_data)
 
     client_socket.close()
+
+    if (replica_host and replica_port):
+        header = f"{file_name}:{file_size}::".ljust(ONE_KILOBYTE)
+        client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client.connect((replica_host, replica_port))
+
+        client.sendall(file_data)
+        client.send(END_BYTE_STRING)
+        client.close()
 
 def start_server(port):
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

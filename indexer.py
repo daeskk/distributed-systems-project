@@ -56,7 +56,7 @@ def main():
     else:
         print(f"[*] List of saved files: ")
         for f in saved_files:
-            print(f"[*] File: {f.name}, server instance: {f.server_instance}, replica instance: {f.replica_instance}")
+            print(f"[*] File: {f[1]}, server instance: {f[2]}, replica instance: {f[3]}")
 
     connection.close()
 
