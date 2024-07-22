@@ -14,12 +14,12 @@ def check_server_health(server_address):
     except (socket.timeout, ConnectionRefusedError):
         return False
 
-def health_check():
+def cyclic_health_check():
     while True:
         for server in AVAILABLE_SERVER_NODES:
             server_status[server] = check_server_health(server)
         time.sleep(10)
-        print('[*] Servers status:', server_status)
+        # print('[*] Servers status:', server_status)
 
 def send_file(file_data, file_name, file_size, main_host, main_port, replica_host, replica_port):
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -50,17 +50,36 @@ def load_balance():
 def handle_client(client_socket: socket.socket):
     main_server, replica_server = load_balance()
 
-    if not main_server or not replica_server:
-        client_socket.sendall('No available servers!'.encode())
-        return
-    
-    client_socket.sendall('Available server found!'.encode())
-    
-    main_host = main_server[0]
-    main_port = main_server[1]
-    replica_host = replica_server[0]
-    replica_port = replica_server[1]
+    selected_main = main_server
+    selected_replica = replica_server
 
+    while True:
+        if not selected_main or not selected_replica:
+            client_socket.sendall('No available servers!'.encode())
+            return
+
+        main_on = check_server_health(selected_main)
+        replica_on = check_server_health(selected_replica)
+
+        if main_on and replica_on: break
+
+        if not main_on:
+            server_status[main_server] = False
+        if not replica_on:
+            server_status[replica_server] = False
+        
+        main_server, replica_server = load_balance()
+
+        selected_replica = main_server
+        selected_replica = replica_server
+
+    
+    main_host = selected_main[0]
+    main_port = selected_main[1]
+    replica_host = selected_replica[0]
+    replica_port = selected_replica[1]
+
+    client_socket.sendall('Available server found!'.encode())
 
     print(f"[*] Selected host {main_server} and replica {replica_server}")
 
@@ -79,19 +98,23 @@ def handle_client(client_socket: socket.socket):
             file_data += data_chunk
 
         file_data = file_data[:-5]
-
-        send_file(file_data, 
-                  file_name, file_size, 
-                  main_host, main_port, 
-                  replica_host, replica_port)
         
         indexer_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         indexer_client.connect((INDEXER_HOST, INDEXER_PORT))
 
         header = f"{file_name}_{main_host}_{replica_host}"
 
+        print('header', header)
+
         indexer_client.sendall(header.encode())
         indexer_client.close()
+
+        send_file(file_data, 
+                  file_name, file_size, 
+                  main_host, main_port, 
+                  replica_host, replica_port)
+        
+        client_socket.close()
 
     except Exception as e:
         print('[-] Error while handling the client request.', e)
@@ -101,7 +124,7 @@ def main():
     manager.bind((socket.gethostname(), MIDDLEWARE_PORT))
     manager.listen(3)
 
-    health_check_thread = threading.Thread(target=health_check)
+    health_check_thread = threading.Thread(target=cyclic_health_check)
     health_check_thread.daemon = True
     health_check_thread.start()
 
@@ -112,8 +135,8 @@ def main():
 
         print("[*] Connection stablished with ", addr)
 
-        handle_client(client_socket)
-        client_socket.close()
+        thread = threading.Thread(target=handle_client, args=(client_socket,))
+        thread.start()
 
 if __name__ == "__main__":
     main()

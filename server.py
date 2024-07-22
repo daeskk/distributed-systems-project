@@ -32,8 +32,9 @@ def handle_client(client_socket: socket.socket):
     if (replica_host and replica_port):
         header = f"{file_name}:{file_size}::".ljust(ONE_KILOBYTE)
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client.connect((replica_host, replica_port))
+        client.connect((replica_host, int(replica_port)))
 
+        client.sendall(header.encode())
         client.sendall(file_data)
         client.send(END_BYTE_STRING)
         client.close()
@@ -48,9 +49,9 @@ def start_server(port):
     while True:
         client_socket, addr = server.accept()
         
-        print("[*] Connection stablished with ", addr)
+        # print("[*] Connection stablished with ", addr)
 
-        thread = threading.Thread(target=handle_client, args=client_socket)
+        thread = threading.Thread(target=handle_client, args=(client_socket,))
         thread.start()
 
 if __name__ == "__main__":
