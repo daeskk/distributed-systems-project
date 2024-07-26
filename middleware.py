@@ -1,6 +1,7 @@
 import socket
 import time
 import threading
+import random
 
 from config import AVAILABLE_SERVER_NODES, END_BYTE_STRING, MIDDLEWARE_PORT, ONE_KILOBYTE, INDEXER_PORT, INDEXER_HOST
 
@@ -42,7 +43,9 @@ def load_balance():
         return None, None
     
     primary_server = healthy_servers[current_server % len(healthy_servers)]
-    replica_server = healthy_servers[(current_server + 1) % len(healthy_servers)]
+    available_replicas = [server for server in healthy_servers if server != primary_server]
+    replica_server = random.choice(available_replicas)
+
     current_server = (current_server + 1) % len(healthy_servers)
     
     return primary_server, replica_server
@@ -102,15 +105,17 @@ def handle_client(client_socket: socket.socket):
         indexer_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         indexer_client.connect((INDEXER_HOST, INDEXER_PORT))
 
-        header = f"{file_name}_{main_host}_{replica_host}"
+        header = f"{file_name}:{main_host}:{replica_host}"
 
         print('header', header)
 
         indexer_client.sendall(header.encode())
+        filename = indexer_client.recv(ONE_KILOBYTE).decode()
+        
         indexer_client.close()
 
         send_file(file_data, 
-                  file_name, file_size, 
+                  filename, file_size, 
                   main_host, main_port, 
                   replica_host, replica_port)
         

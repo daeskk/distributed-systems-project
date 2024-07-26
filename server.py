@@ -4,6 +4,13 @@ import threading
 
 from config import ONE_KILOBYTE, END_BYTE_STRING
 
+def add_replica_suffix(file_name):
+    name, extension = file_name.rsplit('.', 1)
+    
+    new_name = f"{name} (replica).{extension}"
+    
+    return new_name
+
 def handle_client(client_socket: socket.socket):
     header = client_socket.recv(ONE_KILOBYTE).decode().strip()
 
@@ -30,7 +37,7 @@ def handle_client(client_socket: socket.socket):
     client_socket.close()
 
     if (replica_host and replica_port):
-        header = f"{file_name}:{file_size}::".ljust(ONE_KILOBYTE)
+        header = f"{add_replica_suffix(file_name)}:{file_size}::".ljust(ONE_KILOBYTE)
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client.connect((replica_host, int(replica_port)))
 
