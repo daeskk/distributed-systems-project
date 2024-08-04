@@ -107,8 +107,6 @@ def handle_client(client_socket: socket.socket):
 
         header = f"{file_name}:{main_host}:{replica_host}"
 
-        print('header', header)
-
         indexer_client.sendall(header.encode())
         filename = indexer_client.recv(ONE_KILOBYTE).decode()
         
